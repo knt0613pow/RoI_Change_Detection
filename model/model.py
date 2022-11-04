@@ -1,6 +1,24 @@
 import torch.nn as nn
 import torch.nn.functional as F
 from base import BaseModel
+import pygmtools
+import scipy.spatial as spa 
+import numpy as np
+import itertools
+
+def delaunay_triangulation(kpt):
+    d = spa.Delaunay(kpt.numpy().transpose())
+    A = torch.zeros(len(kpt[0]), len(kpt[0]))
+    for simplex in d.simplices:
+        for pair in itertools.permutations(simplex, 2):
+            A[pair] = 1
+    return A
+
+
+pygmtools.BACKEND = 'pytorch'
+def node_aff_fn(T1, T2, We):
+    return pygmtools.utils.inner_prod_aff_fn(torch.matmul(T1,We), T2)
+
 
 
 class MnistModel(BaseModel):
